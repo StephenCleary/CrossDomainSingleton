@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Lifetime;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,35 +23,43 @@ namespace DomainAwareSingleton
     {
         public MainWindow()
         {
+            LifetimeServices.LeaseTime = TimeSpan.FromSeconds(30);
+            LifetimeServices.RenewOnCallTime = TimeSpan.FromSeconds(30);
             InitializeComponent();
         }
 
+        private AppDomain _otherDomain1;
+
         private void Button1_Click(object sender, RoutedEventArgs e)
         {
-            var otherDomain = AppDomain.CreateDomain("otherDomain1");
-            otherDomain.DoCallBack(Test1);
+            if (_otherDomain1 == null)
+                _otherDomain1 = AppDomain.CreateDomain("otherDomain1");
+            _otherDomain1.DoCallBack(Test1);
             Test1();
         }
 
         private static void Test1()
         {
             var value = Singleton<TestType1>.Instance;
-            if (value != null)
-                MessageBox.Show("Retrieved instance in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
+            MessageBox.Show("Retrieved instance in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
+            value.Test();
         }
+
+        private AppDomain _otherDomain2;
 
         private void Button2_Click(object sender, RoutedEventArgs e)
         {
-            var otherDomain = AppDomain.CreateDomain("otherDomain2");
+            if (_otherDomain2 == null)
+                _otherDomain2 = AppDomain.CreateDomain("otherDomain2");
             Test2();
-            otherDomain.DoCallBack(Test2);
+            _otherDomain2.DoCallBack(Test2);
         }
 
         private static void Test2()
         {
             var value = Singleton<TestType2>.Instance;
-            if (value != null)
-                MessageBox.Show("Retrieved instance in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
+            MessageBox.Show("Retrieved instance in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
+            value.Test();
         }
 
         private void EnumerateButton_Click(object sender, RoutedEventArgs e)

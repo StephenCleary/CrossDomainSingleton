@@ -13,6 +13,11 @@ namespace DomainAwareSingleton
         {
             MessageBox.Show("Creating instance in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
         }
+
+        public void Test()
+        {
+            MessageBox.Show("Invoked in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
+        }
     }
 
     public sealed class TestType2 : MarshalByRefObject
@@ -20,6 +25,11 @@ namespace DomainAwareSingleton
         public TestType2()
         {
             MessageBox.Show("Creating instance in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
+        }
+
+        public void Test()
+        {
+            MessageBox.Show("Invoked in AppDomain " + AppDomain.CurrentDomain.FriendlyName);
         }
     }
 }
