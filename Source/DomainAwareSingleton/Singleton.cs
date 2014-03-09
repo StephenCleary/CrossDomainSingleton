@@ -22,7 +22,7 @@ namespace DomainAwareSingleton
         private static readonly Lazy<T> LazyInstance = AppDomain.CurrentDomain.IsDefaultAppDomain() ? CreateOnDefaultAppDomain() : CreateOnOtherAppDomain();
 
         /// <summary>
-        /// Returns a lazy type that creates the instance (if necessary) and saves it in the domain data. This method must only be called from the default AppDomain.
+        /// Returns a lazy that creates the instance (if necessary) and saves it in the domain data. This method must only be called from the default AppDomain.
         /// </summary>
         private static Lazy<T> CreateOnDefaultAppDomain()
         {
@@ -35,7 +35,7 @@ namespace DomainAwareSingleton
         }
 
         /// <summary>
-        /// Returns a lazy type that calls into the default domain to create the instance and retrieves a proxy into the current domain.
+        /// Returns a lazy that calls into the default domain to create the instance and retrieves a proxy into the current domain.
         /// </summary>
         private static Lazy<T> CreateOnOtherAppDomain()
         {
