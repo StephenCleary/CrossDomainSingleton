@@ -19,16 +19,16 @@ namespace DomainAwareSingleton
         /// <summary>
         /// A local cache of the instance.
         /// </summary>
-        private static readonly Lazy<T> LazyInstance = AppDomain.CurrentDomain.IsDefaultAppDomain() ? CreateOnDefaultAppDomain() : CreateOnOtherAppDomain();
+        private static readonly Lazy<Wrapper> LazyInstance = AppDomain.CurrentDomain.IsDefaultAppDomain() ? CreateOnDefaultAppDomain() : CreateOnOtherAppDomain();
 
         /// <summary>
         /// Returns a lazy that creates the instance (if necessary) and saves it in the domain data. This method must only be called from the default AppDomain.
         /// </summary>
-        private static Lazy<T> CreateOnDefaultAppDomain()
+        private static Lazy<Wrapper> CreateOnDefaultAppDomain()
         {
-            return new Lazy<T>(() =>
+            return new Lazy<Wrapper>(() =>
             {
-                var ret = new T();
+                var ret = new Wrapper { Instance = new T() };
                 AppDomain.CurrentDomain.SetData(Name, ret);
                 return ret;
             });
@@ -37,13 +37,13 @@ namespace DomainAwareSingleton
         /// <summary>
         /// Returns a lazy that calls into the default domain to create the instance and retrieves a proxy into the current domain.
         /// </summary>
-        private static Lazy<T> CreateOnOtherAppDomain()
+        private static Lazy<Wrapper> CreateOnOtherAppDomain()
         {
-            return new Lazy<T>(() =>
+            return new Lazy<Wrapper>(() =>
             {
                 var defaultAppDomain = AppDomainHelper.DefaultAppDomain;
                 defaultAppDomain.DoCallBack(CreateCallback);
-                return (T)defaultAppDomain.GetData(Name);
+                return (Wrapper)defaultAppDomain.GetData(Name);
             });
         }
 
@@ -58,6 +58,16 @@ namespace DomainAwareSingleton
         /// <summary>
         /// Gets the process-wide instance. If the current domain is not the default AppDomain, this property returns a proxy to the actual instance.
         /// </summary>
-        public static T Instance { get { return LazyInstance.Value; } }
+        public static T Instance { get { return LazyInstance.Value.Instance; } }
+
+        private sealed class Wrapper : MarshalByRefObject
+        {
+            public override object InitializeLifetimeService()
+            {
+                return null;
+            }
+
+            public T Instance { get; set; }
+        }
     }
 }
