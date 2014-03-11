@@ -17,9 +17,14 @@ namespace DomainAwareSingleton
         }
 
         /// <summary>
-        /// A local cache of the instance.
+        /// A local cache of the instance wrapper.
         /// </summary>
         private static readonly Lazy<Wrapper> LazyInstance = AppDomain.CurrentDomain.IsDefaultAppDomain() ? CreateOnDefaultAppDomain() : CreateOnOtherAppDomain();
+
+        /// <summary>
+        /// A local cache of the instance.
+        /// </summary>
+        private static readonly Lazy<T> CachedLazyInstance = new Lazy<T>(() => Instance);
 
         /// <summary>
         /// Returns a lazy that creates the instance (if necessary) and saves it in the domain data. This method must only be called from the default AppDomain.
@@ -28,7 +33,7 @@ namespace DomainAwareSingleton
         {
             return new Lazy<Wrapper>(() =>
             {
-                var ret = new Wrapper { Instance = new T() };
+                var ret = new Wrapper { WrappedInstance = new T() };
                 AppDomain.CurrentDomain.SetData(Name, ret);
                 return ret;
             });
@@ -56,9 +61,14 @@ namespace DomainAwareSingleton
         }
 
         /// <summary>
-        /// Gets the process-wide instance. If the current domain is not the default AppDomain, this property returns a proxy to the actual instance.
+        /// Gets the process-wide instance. If the current domain is not the default AppDomain, this property returns a new proxy to the actual instance.
         /// </summary>
-        public static T Instance { get { return LazyInstance.Value.Instance; } }
+        public static T Instance { get { return LazyInstance.Value.WrappedInstance; } }
+
+        /// <summary>
+        /// Gets the process-wide instance. If the current domain is not the default AppDomain, this property returns a cached proxy to the actual instance. It is your responsibility to ensure that the cached proxy does not time out; if you don't know what this means, use <see cref="Instance"/> instead.
+        /// </summary>
+        public static T CachedInstance { get { return CachedLazyInstance.Value; } }
 
         private sealed class Wrapper : MarshalByRefObject
         {
@@ -67,7 +77,7 @@ namespace DomainAwareSingleton
                 return null;
             }
 
-            public T Instance { get; set; }
+            public T WrappedInstance { get; set; }
         }
     }
 }
