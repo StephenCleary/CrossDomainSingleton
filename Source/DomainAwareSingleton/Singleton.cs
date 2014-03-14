@@ -47,6 +47,9 @@ namespace DomainAwareSingleton
             return new Lazy<Wrapper>(() =>
             {
                 var defaultAppDomain = AppDomainHelper.DefaultAppDomain;
+                var ret = defaultAppDomain.GetData(Name) as Wrapper;
+                if (ret != null)
+                    return ret;
                 defaultAppDomain.DoCallBack(CreateCallback);
                 return (Wrapper)defaultAppDomain.GetData(Name);
             });
